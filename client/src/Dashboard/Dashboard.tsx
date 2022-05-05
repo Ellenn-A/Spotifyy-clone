@@ -10,6 +10,8 @@ import {
 } from "../Types/Types";
 import SpotifyWebApi from "spotify-web-api-node";
 import { errorMonitor } from "events";
+import { TrackSearchResult } from "../Components/TrackSearchResult";
+import { Player } from "../Components/Player";
 
 const spotifyApi = new SpotifyWebApi({
   clientId: "8f273efb99e646baaa11d22dc9e41803",
@@ -20,7 +22,8 @@ export const Dashboard: React.FC<ICode> = ({ code }): JSX.Element => {
   const accessToken = useAuth({ code });
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState<IReducedSongInfo[]>();
-  console.log(searchResults);
+  const [chosenTrack, setChosenTrack] = useState<IReducedSongInfo>();
+ 
 
   //   async function to get songs
   const getTracks = async (
@@ -63,6 +66,7 @@ export const Dashboard: React.FC<ICode> = ({ code }): JSX.Element => {
           };
         });
         setSearchResults(sth);
+        // console.log(searchResults)
       
     });
     
@@ -81,7 +85,12 @@ export const Dashboard: React.FC<ICode> = ({ code }): JSX.Element => {
       />
 
       <div className="flex-grow-1 my-2" style={{ overflowY: "auto" }}>
-        Songs
+        {searchResults?.map(track =>(
+            <TrackSearchResult track = {track} key={track.uri} setChosenTrack={setChosenTrack} />
+        ))}
+      </div>
+      <div>
+          <Player accessToken={accessToken} trackUri={chosenTrack?.uri} />
       </div>
       <div>Bottom</div>
     </Container>
