@@ -12,6 +12,7 @@ import SpotifyWebApi from "spotify-web-api-node";
 import { errorMonitor } from "events";
 import { TrackSearchResult } from "../Components/TrackSearchResult";
 import { Player } from "../Components/Player";
+import axios from "axios";
 
 const spotifyApi = new SpotifyWebApi({
   clientId: "8f273efb99e646baaa11d22dc9e41803",
@@ -23,7 +24,7 @@ export const Dashboard: React.FC<ICode> = ({ code }): JSX.Element => {
   const [search, setSearch] = useState("");
   const [searchResults, setSearchResults] = useState<IReducedSongInfo[]>();
   const [chosenTrack, setChosenTrack] = useState<IReducedSongInfo>();
- 
+  const [lyrics, setLyrics] = useState("");
 
   //   async function to get songs
   const getTracks = async (
@@ -48,32 +49,46 @@ export const Dashboard: React.FC<ICode> = ({ code }): JSX.Element => {
     let cancel = false;
     getTracks(search).then((result) => {
       if (cancel) return;
-      
-        const sth: IReducedSongInfo[] = result.map((track) => {
-          const smallestAlbumImage = track.album.images.reduce<any>(
-            (smallest, image) => {
-              if (!image.height || !smallest.height) return;
-              if (image.height < smallest.height) return image;
-              return smallest;
-            },
-            track.album.images[0]
-          );
-          return {
-            artist: track.artists[0].name,
-            title: track.name,
-            uri: track.uri,
-            albumUrl: smallestAlbumImage.url,
-          };
-        });
-        setSearchResults(sth);
-        // console.log(searchResults)
-      
+
+      const sth: IReducedSongInfo[] = result.map((track) => {
+        const smallestAlbumImage = track.album.images.reduce<any>(
+          (smallest, image) => {
+            if (!image.height || !smallest.height) return;
+            if (image.height < smallest.height) return image;
+            return smallest;
+          },
+          track.album.images[0]
+        );
+        return {
+          artist: track.artists[0].name,
+          title: track.name,
+          uri: track.uri,
+          albumUrl: smallestAlbumImage.url,
+        };
+      });
+      setSearchResults(sth);
+      // console.log(searchResults)
     });
-    
-    
+
     return () => {
-      cancel = true;}
+      cancel = true;
+    };
   }, [search, accessToken]);
+
+  //getting lyrics
+  useEffect(() =>{
+      if(!chosenTrack) return
+      axios.get('http://localhost:3001/lyrics',{
+          params: {
+              track:chosenTrack.title,
+              artist: chosenTrack.artist
+          }
+      }).then(res =>{
+          setLyrics(res.data.lyrics)
+           console.log(res.data.lyrics)
+      })
+
+  },[chosenTrack])
 
   return (
     <Container className="d-flex flex-column py-2" style={{ height: "100vh" }}>
@@ -85,12 +100,23 @@ export const Dashboard: React.FC<ICode> = ({ code }): JSX.Element => {
       />
 
       <div className="flex-grow-1 my-2" style={{ overflowY: "auto" }}>
-        {searchResults?.map(track =>(
-            <TrackSearchResult track = {track} key={track.uri} setChosenTrack={setChosenTrack} />
+        {searchResults?.map((track) => (
+          <TrackSearchResult
+            track={track}
+            key={track.uri}
+            setChosenTrack={setChosenTrack}
+            setSearch={setSearch}
+            setLyrics={setLyrics}
+          />
         ))}
+        {searchResults?.length === 0 && (
+          <div className="text-center" style={{ whiteSpace: "pre" }}>
+            {lyrics}
+          </div>
+        )}
       </div>
       <div>
-          <Player accessToken={accessToken} trackUri={chosenTrack?.uri} />
+        <Player accessToken={accessToken} trackUri={chosenTrack?.uri} />
       </div>
       <div>Bottom</div>
     </Container>

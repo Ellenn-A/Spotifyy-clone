@@ -4,9 +4,13 @@ import { ITrackResult } from "../Types/Types";
 export const TrackSearchResult: React.FC<ITrackResult> = ({
   track,
   setChosenTrack,
+  setSearch,
+  setLyrics
 }) => {
   const handlePlay = () => {
     setChosenTrack(track);
+    setSearch("");
+    setLyrics("");
   };
 
   return (

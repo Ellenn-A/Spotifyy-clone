@@ -29,8 +29,10 @@ export interface IReducedSongInfo {
 
 export interface ITrackResult {
     track : IReducedSongInfo;
-    key: string 
-    setChosenTrack: React.Dispatch<React.SetStateAction<IReducedSongInfo | undefined>>
+    key: string ;
+    setChosenTrack: React.Dispatch<React.SetStateAction<IReducedSongInfo | undefined>>;
+    setSearch: React.Dispatch<React.SetStateAction<string>>;
+    setLyrics: React.Dispatch<React.SetStateAction<string>>
 }
 
 export interface IPlayerProps {
